@@ -12,7 +12,7 @@ app.use(express.json())
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.tcuzcs8.mongodb.net/?retryWrites=true&w=majority`;
 
 // DB_PASS=0SYOcSzDYraeaLUt
@@ -30,17 +30,28 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
 
+    const usersCollection = client.db("bistro-boss").collection("users");
     const menuCollection = client.db("bistro-boss").collection("menu");
     const reviewCollection = client.db("bistro-boss").collection("reviews");
     const cartCollection = client.db("bistro-boss").collection("carts");
 
+  
+    // users related apis
+    app.post('/users', async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
+      console.log(user);
+      res.send(result)  
+    })
 
+    // menu related apis
     app.get ('/menu', async(req, res)=>{
         const result = await menuCollection.find().toArray()
         res.send(result)
-
     })
 
+
+    // review related apis
     app.get ('/reviews', async(req, res)=>{
         const result = await reviewCollection.find().toArray()
         res.send(result)
@@ -48,7 +59,6 @@ async function run() {
 
 
     // cart collections apis
-
     app.get ('/carts', async (req, res)=>{
       const email = req.query.email;
       if (!email){
@@ -60,12 +70,22 @@ async function run() {
       }
     })
 
-
+// carts related apis
     app.post ('/carts', async(req, res)=>{
       const item = req.body;
       console.log(item);
         const result = await cartCollection.insertOne(item);
         res.send(result)
+    })
+
+
+    // Delete myCart items
+
+    app.delete('/carts/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await cartCollection.deleteOne(query)
+      res.send(result)
     })
 
 
