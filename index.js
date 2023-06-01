@@ -36,16 +36,23 @@ async function run() {
     const cartCollection = client.db("bistro-boss").collection("carts");
 
   
-    // users related apis
+    // All users related apis
+    app.get("/users", async(req, res) => {
+      const result = await usersCollection.find().toArray()
+      res.send(result)
+      console.log(result)
+    })
+  
+    // existing users related apis
     app.post('/users', async (req, res) => {
       const user = req.body;
       const query = {email: user.email}
       const existingUser = await usersCollection.findOne(query);
-      console.log(user);
+      
       if (existingUser){
         return res.send({message: 'User already exists'})
       }
-      console.log('existing User', existingUser);
+      
       const result = await usersCollection.insertOne(user);
       res.send(result)  
     })
